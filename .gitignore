@@ -1,0 +1,11 @@
+Data/Raw/
+Data/Processed/
+Outputs/
+
+*.pkl
+*.txt.lgbm
+
+__pycache__/
+.ipynb_checkpoints/
+*.pyc
+.env
