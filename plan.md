@@ -37,10 +37,7 @@ Credit-risk-PD/
 | `previous_application.csv` | 405 MB | 1.7M | Yes |
 | `installments_payments.csv` | 723 MB | 13M | Yes |
 | `credit_card_balance.csv` | 425 MB | 3.8M | Yes |
-| `bureau_balance.csv` | 376 MB | 27M | **Delete** — too large, 3 cols, low marginal value |
-| `POS_CASH_balance.csv` | 393 MB | 10M | **Delete** — similar signal to instalments |
-| `application_test.csv` | — | — | **Delete** — no TARGET column |
-| `sample_submission.csv` | — | — | **Delete** — Kaggle artefact |
+| `HomeCredit_columns_description.csv` | — | — | Keep — column reference, consult while implementing |
 
 > Note: actual filename is `installments_payments.csv` (double-l), not `instalments_payments.csv`
 
@@ -75,25 +72,25 @@ Credit-risk-PD/
 
 ### Notebook 00 — Data Reduction
 
-- [ ] Read `application_train.csv`, verify shape (307511, 122) and default rate (~8%)
-- [ ] Drop document flags (`FLAG_DOCUMENT_2–21`), contact flags, housing detail columns
-- [ ] Keep 33 essential columns → save `application_slim.parquet`
-- [ ] Aggregate `bureau.csv` → `bureau_agg.parquet`
-  - [ ] `bureau_loan_count`, `bureau_active_count`, `bureau_total_debt`, `bureau_total_credit`
-  - [ ] `bureau_total_overdue`, `bureau_max_overdue`, `bureau_avg_days`, `bureau_cnt_prolong`
-  - [ ] Derived: `bureau_debt_ratio = bureau_total_debt / bureau_total_credit`
-- [ ] Aggregate `previous_application.csv` (most recent 3 per customer) → `prev_agg.parquet`
-  - [ ] `prev_count`, `prev_approved`, `prev_refused`, `prev_avg_credit`, `prev_avg_annuity`, `prev_days_last`
-  - [ ] Derived: `prev_approval_rate = prev_approved / prev_count`
-- [ ] Aggregate `installments_payments.csv` (last 12 months only) → `inst_agg.parquet`
-  - [ ] Compute `payment_diff = AMT_PAYMENT - AMT_INSTALMENT`, `days_late`, `is_late`
-  - [ ] `inst_count`, `inst_late_count`, `inst_avg_diff`, `inst_max_late`
-  - [ ] Derived: `inst_late_rate = inst_late_count / inst_count`
-- [ ] Aggregate `credit_card_balance.csv` (last 6 months only) → `cc_agg.parquet`
-  - [ ] `cc_avg_balance`, `cc_avg_limit`, `cc_avg_payment`, `cc_max_dpd`, `cc_max_dpd_def`
-  - [ ] Derived: `cc_utilisation = cc_avg_balance / cc_avg_limit`
-- [ ] Left-join all 4 aggregates onto application_slim → `master.parquet`
-- [ ] Verify: ~307k rows, ~55 columns, ~8% default rate
+- [x] Read `application_train.csv`, verify shape (307511, 122) and default rate (~8%)
+- [x] Drop document flags (`FLAG_DOCUMENT_2–21`), contact flags, housing detail columns
+- [x] Keep 33 essential columns → save `application_slim.parquet`
+- [x] Aggregate `bureau.csv` → `bureau_agg.parquet`
+  - [x] `bureau_loan_count`, `bureau_active_count`, `bureau_total_debt`, `bureau_total_credit`
+  - [x] `bureau_total_overdue`, `bureau_max_overdue`, `bureau_avg_days`, `bureau_cnt_prolong`
+  - [x] Derived: `bureau_debt_ratio = bureau_total_debt / bureau_total_credit`
+- [x] Aggregate `previous_application.csv` (most recent 3 per customer) → `prev_agg.parquet`
+  - [x] `prev_count`, `prev_approved`, `prev_refused`, `prev_avg_credit`, `prev_avg_annuity`, `prev_days_last`
+  - [x] Derived: `prev_approval_rate = prev_approved / prev_count`
+- [x] Aggregate `installments_payments.csv` (last 12 months only) → `inst_agg.parquet`
+  - [x] Compute `payment_diff = AMT_PAYMENT - AMT_INSTALMENT`, `days_late`, `is_late`
+  - [x] `inst_count`, `inst_late_count`, `inst_avg_diff`, `inst_max_late`
+  - [x] Derived: `inst_late_rate = inst_late_count / inst_count`
+- [x] Aggregate `credit_card_balance.csv` (last 6 months only) → `cc_agg.parquet`
+  - [x] `cc_avg_balance`, `cc_avg_limit`, `cc_avg_payment`, `cc_max_dpd`, `cc_max_dpd_def`
+  - [x] Derived: `cc_utilisation = cc_avg_balance / cc_avg_limit`
+- [x] Left-join all 4 aggregates onto application_slim → `master.parquet`
+- [x] Verify: 307511 rows, 61 columns, 8.07% default rate ✓
 
 ---
 
