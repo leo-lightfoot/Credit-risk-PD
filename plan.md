@@ -96,96 +96,86 @@ Credit-risk-PD/
 
 ### Notebook 01 — EDA
 
-- [ ] Load `master.parquet`
-- [ ] Default rate by key segments: `NAME_CONTRACT_TYPE`, `CODE_GENDER`, `NAME_INCOME_TYPE`, `NAME_EDUCATION_TYPE`
-  - [ ] Horizontal bar charts, save to `Outputs/dr_<col>.png`
-- [ ] Distributions split by target for: `EXT_SOURCE_1`, `EXT_SOURCE_2`, `EXT_SOURCE_3`, `AMT_CREDIT`, `DAYS_BIRTH`
-  - [ ] Overlapping histograms, save to `Outputs/dist_<col>.png`
-- [ ] Missing value bar chart → save `Outputs/missing_rates.png`
-- [ ] Document observations in a markdown cell:
-  - [ ] `EXT_SOURCE_2` and `EXT_SOURCE_3` clearly separate defaulters
-  - [ ] `DAYS_EMPLOYED = 365243` is a sentinel for unemployed
-  - [ ] `EXT_SOURCE_1` has ~56% missing — missingness itself is a risk signal
-  - [ ] Bureau-joined columns have many NaNs (no bureau history = higher risk)
-  - [ ] Class imbalance ~8:92 — do not oversample; WoE handles it implicitly
+- [x] Load `master.parquet`
+- [x] Default rate by key segments: `NAME_CONTRACT_TYPE`, `CODE_GENDER`, `NAME_INCOME_TYPE`, `NAME_EDUCATION_TYPE`
+  - [x] Horizontal bar charts → `Outputs/dr_<col>.png` (4 files confirmed)
+- [x] Distributions split by target for: `EXT_SOURCE_1`, `EXT_SOURCE_2`, `EXT_SOURCE_3`, `AMT_CREDIT`, `DAYS_BIRTH`
+  - [x] Overlapping histograms → `Outputs/dist_<col>.png` (5 files confirmed)
+- [x] Missing value bar chart → `Outputs/missing_rates.png` ✓
+- [ ] **PENDING** — Document observations in NB01 Section 4 markdown cell (left blank intentionally — fill in after reviewing charts)
 
 ---
 
 ### Notebook 02 — Feature Engineering & Selection
 
-- [ ] Load `master.parquet`
-- [ ] Create affordability ratios:
-  - [ ] `credit_annuity_ratio = AMT_CREDIT / AMT_ANNUITY`
-  - [ ] `income_annuity_ratio = AMT_INCOME_TOTAL / AMT_ANNUITY`
-  - [ ] `income_credit_ratio = AMT_INCOME_TOTAL / AMT_CREDIT`
-  - [ ] `credit_goods_ratio = AMT_CREDIT / AMT_GOODS_PRICE`
-- [ ] Create age & employment features:
-  - [ ] `age_years = DAYS_BIRTH / -365`
-  - [ ] `is_unemployed = (DAYS_EMPLOYED == 365243).astype(int)`
-  - [ ] `employed_years = DAYS_EMPLOYED.where(DAYS_EMPLOYED != 365243) / -365`
-  - [ ] `employed_age_ratio = employed_years / age_years`
-- [ ] Create external score composites:
-  - [ ] `ext_source_mean` (mean of EXT_SOURCE_1/2/3)
-  - [ ] `ext_source_min` (min of EXT_SOURCE_1/2/3)
-- [ ] Create bureau signal: `bureau_overdue_rate = bureau_total_overdue / bureau_total_credit`
-- [ ] Create address & inquiry features:
-  - [ ] `address_mismatch = REG_CITY_NOT_LIVE_CITY + REG_CITY_NOT_WORK_CITY`
-  - [ ] `recent_inquiries = AMT_REQ_CREDIT_BUREAU_MON + AMT_REQ_CREDIT_BUREAU_QRT`
-- [ ] Run `scorecardpy.iv()` on all features, print ranked IV table
-- [ ] Apply IV filter: keep features with IV > 0.05, covering distinct dimensions
-- [ ] Define final `selected_features` list (target: 15–20 features)
-- [ ] Save `master_features.parquet`
+- [x] Load `master.parquet`
+- [x] Create affordability ratios: `credit_annuity_ratio`, `income_annuity_ratio`, `income_credit_ratio`, `credit_goods_ratio`
+- [x] Create age & employment features: `age_years`, `is_unemployed`, `employed_years`, `employed_age_ratio`
+- [x] Create external score composites: `ext_source_mean`, `ext_source_min`
+- [x] Create bureau signal: `bureau_overdue_rate`
+- [x] Create address & inquiry features: `address_mismatch`, `recent_inquiries`
+- [x] ~~`scorecardpy.iv()`~~ → **CHANGED** replaced with custom `compute_iv()` using pandas groupby (same formula, runs in seconds vs 30+ min)
+- [x] IV filter applied — auto-selects features with IV > 0.05, excludes superseded raw columns
+- [x] **CHANGED** — 25 features selected (plan said 15–20); all pass IV > 0.05 threshold
+- [x] **ADDED** — saves `selected_features.json` so feature list flows automatically into NB03/04/05
+- [x] Save `master_features.parquet` ✓
 
 ---
 
 ### Notebook 03 — WoE Scorecard
 
-- [ ] Load `master_features.parquet`, sort by `SK_ID_CURR`
-- [ ] 80/20 out-of-time split (first 80% trains, last 20% tests)
-- [ ] Print train/OOT sizes and default rates (should both be ~8%)
-- [ ] Fit `BinningProcess` on train: `min_bin_size=0.05`, `max_n_bins=8`
-- [ ] For each variable, print binning table — verify WoE is monotone and intuitive
-- [ ] Transform train and OOT to WoE
-- [ ] Fit `LogisticRegression(penalty='l2', C=1.0, solver='lbfgs', max_iter=1000)`
-- [ ] Print coefficient table — verify signs align with business logic (higher score = lower risk)
-- [ ] Convert probabilities to scorecard points (PDO=20, base score=600, base odds=50:1)
-- [ ] Plot score distribution by outcome → save `Outputs/score_distribution.png`
-- [ ] Plot calibration curve (OOT) → save `Outputs/calibration.png`
-- [ ] Save `Outputs/lr_model.pkl` and `Outputs/binning.pkl`
+- [x] Load `master_features.parquet` + `selected_features.json`, sort by `SK_ID_CURR`
+- [x] 80/20 out-of-time split
+- [x] Print train/OOT sizes and default rates
+- [x] Fit `BinningProcess`: `min_bin_size=0.05`, `max_n_bins=8`; auto-detects categorical columns
+- [x] Print binning table per variable
+- [x] Transform train and OOT to WoE
+- [x] Fit `LogisticRegression(penalty='l2', C=1.0, solver='lbfgs', max_iter=1000)`
+- [x] Print coefficient table
+- [x] Convert to scorecard points (PDO=20, base=600, odds=50:1)
+- [x] Score distribution plot → `Outputs/score_distribution.png` ✓
+- [x] Calibration curve → `Outputs/calibration.png` ✓
+- [x] Save `Outputs/lr_model.pkl` and `Outputs/binning.pkl` ✓
 
 ---
 
 ### Notebook 04 — LightGBM Benchmark
 
-- [ ] Load `master_features.parquet`, same 80/20 split as notebook 03
-- [ ] Create `lgb.Dataset` for train and OOT
-- [ ] Train with params: `objective=binary`, `metric=auc`, `lr=0.05`, `num_leaves=31`, `min_child_samples=200`
-- [ ] Use early stopping (patience=30), log every 50 rounds
-- [ ] Save `Outputs/lgbm_model.txt`
-- [ ] Compute SHAP values on OOT
-- [ ] SHAP summary plot → save `Outputs/shap_summary.png`
-- [ ] SHAP dependence plot for top feature (likely `EXT_SOURCE_2`) → save `Outputs/shap_dependence.png`
+- [x] Load `master_features.parquet` + `selected_features.json`, same 80/20 split
+- [x] Cast object columns to `category` dtype before creating `lgb.Dataset` (fix for dtype error)
+- [x] Train: `objective=binary`, `metric=auc`, `lr=0.05`, `num_leaves=31`, `min_child_samples=200`
+- [x] Early stopping (patience=30), log every 50 rounds
+- [x] Save `Outputs/lgbm_model.txt` ✓
+- [x] ~~SHAP values + summary/dependence plots~~ → **CHANGED** replaced with LightGBM built-in `feature_importance(importance_type='gain')` due to shap/numba/numpy version conflict
+- [x] Feature importance bar chart → `Outputs/lgbm_feature_importance.png` ✓
 
 ---
 
 ### Notebook 05 — Validation
 
-- [ ] Load `master_features.parquet`, same split; load both saved models
-- [ ] Generate predictions: `y_pred_lr` (scorecard), `y_pred_lgb` (LightGBM)
-- [ ] **Discrimination** — for both models print AUC, Gini, KS
-- [ ] Plot dual ROC curve → save `Outputs/roc_curve.png`
-- [ ] **Calibration** — Hosmer-Lemeshow decile table (scorecard only)
-  - [ ] Group by predicted PD decile; compare observed vs expected default rate
-- [ ] **PSI** — compare train vs OOT score distributions
-  - [ ] Print: Stable (< 0.10) / Monitor (0.10–0.25) / Unstable (> 0.25)
-- [ ] **Rank-ordering** — decile table with cumulative % defaults captured
-  - [ ] Save `Outputs/decile_table.csv`
-- [ ] Final comparison table (AUC, Gini, interpretability, regulatory fit)
-  - [ ] Save `Outputs/model_comparison.csv`
-- [ ] Write reflection markdown cell:
-  - [ ] What is the Gini gap between the two models?
-  - [ ] Why does a bank accept lower Gini for the scorecard?
-  - [ ] What does interpretability buy in a regulated environment?
+**Results: Scorecard AUC 0.758 / Gini 0.516 | LightGBM AUC 0.773 / Gini 0.545 — both exceed "Good" threshold (> 0.50)**
+
+- [x] Load data, models, split; generate all predictions in setup cell
+- [x] **Discrimination** — AUC, Gini, KS printed for both models
+- [x] Dual ROC curve → `Outputs/roc_curve.png` ✓
+- [x] **Calibration** — Hosmer-Lemeshow decile table printed
+- [x] **PSI** — train vs OOT comparison, Stable/Monitor/Unstable label printed
+- [x] **Rank-ordering** — decile table → `Outputs/decile_table.csv` ✓
+- [x] Final comparison table → `Outputs/model_comparison.csv` ✓
+- [ ] **PENDING** — Write reflection markdown cell in NB05 Section 6 (fill in after reviewing results)
+
+---
+
+## Changes from Original Plan
+
+| What | Original | Actual |
+|---|---|---|
+| IV calculation | `scorecardpy.iv()` | Custom `compute_iv()` — same math, seconds not minutes |
+| Feature count | 15–20 | 25 (all IV > 0.05, auto-selected) |
+| Feature list passing | Manual copy-paste | `selected_features.json` auto-loaded by NB03/04/05 |
+| NB04 explainability | SHAP summary + dependence plots | LightGBM built-in gain importance (shap incompatible with numpy version) |
+| Output files | `shap_summary.png`, `shap_dependence.png` | `lgbm_feature_importance.png` |
+| `scorecardpy` | In requirements | Removed — replaced by custom function |
 
 ---
 
@@ -193,28 +183,28 @@ Credit-risk-PD/
 
 | File | Created in | Used in |
 |---|---|---|
-| `application_slim.parquet` | 00 | 00 (merge step) |
-| `bureau_agg.parquet` | 00 | 00 (merge step) |
-| `prev_agg.parquet` | 00 | 00 (merge step) |
-| `inst_agg.parquet` | 00 | 00 (merge step) |
-| `cc_agg.parquet` | 00 | 00 (merge step) |
+| `application_slim.parquet` | 00 | 00 (merge) |
+| `bureau_agg.parquet` | 00 | 00 (merge) |
+| `prev_agg.parquet` | 00 | 00 (merge) |
+| `inst_agg.parquet` | 00 | 00 (merge) |
+| `cc_agg.parquet` | 00 | 00 (merge) |
 | `master.parquet` | 00 | 01, 02 |
 | `master_features.parquet` | 02 | 03, 04, 05 |
+| `selected_features.json` | 02 | 03, 04, 05 |
 
 ## Output File Inventory
 
-| File | Created in |
-|---|---|
-| `dr_<col>.png` (×4) | 01 |
-| `dist_<col>.png` (×5) | 01 |
-| `missing_rates.png` | 01 |
-| `score_distribution.png` | 03 |
-| `calibration.png` | 03 |
-| `lr_model.pkl` | 03 |
-| `binning.pkl` | 03 |
-| `lgbm_model.txt` | 04 |
-| `shap_summary.png` | 04 |
-| `shap_dependence.png` | 04 |
-| `roc_curve.png` | 05 |
-| `decile_table.csv` | 05 |
-| `model_comparison.csv` | 05 |
+| File | Created in | Status |
+|---|---|---|
+| `dr_<col>.png` (×4) | 01 | ✓ |
+| `dist_<col>.png` (×5) | 01 | ✓ |
+| `missing_rates.png` | 01 | ✓ |
+| `score_distribution.png` | 03 | ✓ |
+| `calibration.png` | 03 | ✓ |
+| `lr_model.pkl` | 03 | ✓ |
+| `binning.pkl` | 03 | ✓ |
+| `lgbm_model.txt` | 04 | ✓ |
+| `lgbm_feature_importance.png` | 04 | ✓ |
+| `roc_curve.png` | 05 | ✓ |
+| `decile_table.csv` | 05 | ✓ |
+| `model_comparison.csv` | 05 | ✓ |
