@@ -1,6 +1,5 @@
 Data/Raw/
 Data/Processed/
-Outputs/
 
 *.pkl
 *.txt.lgbm

@@ -101,10 +101,20 @@ In the WoE framework, all coefficients should be negative — higher WoE (more n
 | `AMT_GOODS_PRICE` | −0.467 | Higher goods price → lower risk |
 | `NAME_EDUCATION_TYPE` | −0.464 | Higher education → lower risk ✓ |
 | `cc_utilisation` | −0.458 | Lower utilisation → lower risk ✓ |
-| `inst_max_late` | −0.455 | Fewer late days → lower risk ✓ |
+| `inst_max_late` | −0.455 | Fewer max late days → lower risk ✓ |
 | `ORGANIZATION_TYPE` | −0.445 | Organization type risk gradient |
 | `EXT_SOURCE_1` | −0.376 | Higher score → lower risk ✓ |
 | `bureau_debt_ratio` | −0.349 | Lower debt-to-credit → lower risk ✓ |
+| `OCCUPATION_TYPE` | −0.333 | Occupation type risk gradient |
+| `employed_age_ratio` | −0.234 | Longer employment relative to age → lower risk |
+| `employed_years` | −0.225 | Longer tenure → lower risk ✓ |
+| `ext_source_mean` | −0.195 | Higher composite score → lower risk ✓ |
+| `NAME_INCOME_TYPE` | −0.176 | Income type risk gradient |
+| `inst_late_rate` | −0.158 | Lower late payment rate → lower risk ✓ |
+| `inst_avg_diff` | −0.152 | Smaller payment shortfall → lower risk ✓ |
+| `cc_avg_balance` | −0.137 | Lower card balance → lower risk |
+| `bureau_avg_days` | −0.101 | More recent bureau entries → lower risk |
+| `ext_source_min` | −0.093 | Higher worst external score → lower risk |
 | `age_years` | +0.055 | ⚠ Positive — non-monotone WoE bins |
 | `inst_late_count` | +0.077 | ⚠ Positive — check WoE bins |
 | `cc_avg_payment` | +0.098 | ⚠ Positive — may reflect high-usage profiles |
@@ -139,7 +149,7 @@ Both models comfortably exceed the "Good" threshold for retail unsecured lending
 
 | Feature | Gain | Relative importance |
 |---|---|---|
-| `ext_source_mean` | 112,813 | Dominant — 3× the next feature |
+| `ext_source_mean` | 112,813 | Dominant — ~5× the next feature |
 | `ORGANIZATION_TYPE` | 23,551 | Employer sector |
 | `credit_annuity_ratio` | 19,279 | Loan affordability |
 | `credit_goods_ratio` | 10,301 | Loan-to-goods ratio |
@@ -158,18 +168,18 @@ Both models comfortably exceed the "Good" threshold for retail unsecured lending
 
 The scorecard predicts actual default rates well across the risk spectrum. Observed vs expected default rates per predicted PD decile:
 
-| Decile (0=lowest PD) | N | Observed rate | Expected PD | Assessment |
+| Decile (1=lowest PD, 10=highest PD) | N | Observed rate | Expected PD | Assessment |
 |---|---|---|---|---|
-| 0 | 6,151 | 1.5% | 1.3% | ✓ |
-| 1 | 6,150 | 1.7% | 2.2% | ✓ |
-| 2 | 6,150 | 2.8% | 3.0% | ✓ |
-| 3 | 6,150 | 3.0% | 3.8% | ✓ slight under-prediction |
-| 4 | 6,151 | 4.5% | 4.8% | ✓ |
-| 5 | 6,150 | 5.9% | 6.1% | ✓ |
-| 6 | 6,150 | 8.3% | 7.9% | ✓ |
-| 7 | 6,150 | 10.7% | 10.4% | ✓ |
-| 8 | 6,150 | 15.1% | 14.6% | ✓ |
-| 9 | 6,151 | 25.9% | 26.6% | ✓ slight over-prediction |
+| 1 | 6,151 | 1.5% | 1.3% | ✓ |
+| 2 | 6,150 | 1.7% | 2.2% | ✓ |
+| 3 | 6,150 | 2.8% | 3.0% | ✓ |
+| 4 | 6,150 | 3.0% | 3.8% | ✓ slight under-prediction |
+| 5 | 6,151 | 4.5% | 4.8% | ✓ |
+| 6 | 6,150 | 5.9% | 6.1% | ✓ |
+| 7 | 6,150 | 8.3% | 7.9% | ✓ |
+| 8 | 6,150 | 10.7% | 10.4% | ✓ |
+| 9 | 6,150 | 15.1% | 14.6% | ✓ |
+| 10 | 6,151 | 25.9% | 26.6% | ✓ slight over-prediction |
 
 Calibration is good — observed and expected rates track closely. Slight under-prediction in mid-deciles and over-prediction at the top, but within acceptable tolerance.
 
@@ -190,17 +200,17 @@ The scorecard correctly rank-orders risk. Decile 1 = highest predicted risk, Dec
 | Decile | Count | Default rate | Avg PD | Cum. defaults captured |
 |---|---|---|---|---|
 | 1 (riskiest) | 6,151 | **25.9%** | 26.6% | 32.6% |
-| 2 | 6,150 | 15.1% | 14.6% | 51.5% |
-| 3 | 6,150 | 10.7% | 10.4% | 63.8% |
-| 4 | 6,150 | 8.3% | 7.9% | 73.1% |
-| 5 | 6,150 | 5.9% | 6.1% | 80.5% |
-| 6 | 6,151 | 4.5% | 4.8% | 86.3% |
-| 7 | 6,150 | 3.0% | 3.8% | 89.9% |
-| 8 | 6,150 | 2.8% | 3.0% | 92.7% |
-| 9 | 6,150 | 1.7% | 2.2% | 96.1% |
+| 2 | 6,150 | 15.1% | 14.6% | 51.6% |
+| 3 | 6,150 | 10.7% | 10.4% | 65.1% |
+| 4 | 6,150 | 8.3% | 7.9% | 75.6% |
+| 5 | 6,150 | 5.9% | 6.1% | 83.0% |
+| 6 | 6,151 | 4.5% | 4.8% | 88.7% |
+| 7 | 6,150 | 3.0% | 3.8% | 92.5% |
+| 8 | 6,150 | 2.8% | 3.0% | 96.0% |
+| 9 | 6,150 | 1.7% | 2.2% | 98.1% |
 | 10 (safest) | 6,151 | **1.5%** | 1.3% | 100% |
 
-The top decile has a 25.9% default rate — **17× the bottom decile (1.5%)**. The top two deciles together capture 51.5% of all defaults while representing only 20% of applicants. This is strong rank-ordering.
+The top decile has a 25.9% default rate — **17× the bottom decile (1.5%)**. The top two deciles together capture 51.6% of all defaults while representing only 20% of applicants. This is strong rank-ordering.
 
 ---
 
